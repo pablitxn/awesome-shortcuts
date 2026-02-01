@@ -77,3 +77,65 @@ export interface LLMConfig {
   temperature?: number;
   maxTokens?: number;
 }
+
+// LLM client types
+export interface LLMMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface LLMToolParameter {
+  type: string;
+  description?: string;
+  enum?: string[];
+  items?: LLMToolParameter;
+  properties?: Record<string, LLMToolParameter>;
+  required?: string[];
+}
+
+export interface LLMTool {
+  name: string;
+  description: string;
+  parameters: {
+    type: 'object';
+    properties: Record<string, LLMToolParameter>;
+    required?: string[];
+  };
+}
+
+export interface LLMToolCall {
+  id: string;
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
+export interface LLMResponse {
+  content: string;
+  toolCalls?: LLMToolCall[];
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+  };
+}
+
+// LLM error types
+export class LLMError extends Error {
+  constructor(
+    message: string,
+    public readonly code: LLMErrorCode,
+    public readonly provider: LLMProvider,
+    public readonly cause?: Error
+  ) {
+    super(message);
+    this.name = 'LLMError';
+  }
+}
+
+export type LLMErrorCode =
+  | 'INVALID_API_KEY'
+  | 'RATE_LIMIT'
+  | 'NETWORK_ERROR'
+  | 'INVALID_MODEL'
+  | 'CONTEXT_LENGTH_EXCEEDED'
+  | 'PROVIDER_ERROR'
+  | 'CONFIGURATION_ERROR';
