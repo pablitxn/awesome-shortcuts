@@ -19,9 +19,10 @@ const navItems: NavItem[] = [
 interface SidebarProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
+  onSettingsClick: () => void;
 }
 
-export function Sidebar({ activeCategory, onCategoryChange }: SidebarProps) {
+export function Sidebar({ activeCategory, onCategoryChange, onSettingsClick }: SidebarProps) {
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar-bg">
       {/* Logo */}
@@ -52,7 +53,10 @@ export function Sidebar({ activeCategory, onCategoryChange }: SidebarProps) {
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-sidebar-border p-4">
-        <button className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100">
+        <button
+          onClick={onSettingsClick}
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+        >
           <Settings className="h-4 w-4" />
           Settings
         </button>
