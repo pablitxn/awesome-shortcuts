@@ -20,6 +20,84 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Docker Deployment
+
+This application is designed to run locally using Docker with access to your configuration files.
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Configuration files on your system (e.g., `~/.config/nvim`, `~/.tmux.conf`, `~/.zshrc`)
+
+### Quick Start
+
+1. Build and run the container:
+
+```bash
+docker-compose up --build
+```
+
+2. Access the application at [http://localhost:3000](http://localhost:3000)
+
+3. Check the health endpoint at [http://localhost:3000/api/health](http://localhost:3000/api/health)
+
+### Volume Mounts
+
+The Docker container mounts your local configuration files:
+
+- `~/.config/nvim` → `/mnt/nvim` (read/write)
+- `~/.tmux.conf` → `/mnt/tmux.conf` (read/write)
+- `~/.zshrc` → `/mnt/zshrc` (read/write)
+- `./data` → `/app/data` (SQLite database persistence)
+
+### Environment Variables
+
+Configure these in `docker-compose.yml`:
+
+- `NODE_ENV`: Set to `production`
+- `DATABASE_PATH`: Path to SQLite database (default: `/app/data/local.db`)
+- `CONFIG_NVIM_PATH`: Path to Neovim config in container
+- `CONFIG_TMUX_PATH`: Path to Tmux config in container
+- `CONFIG_ZSH_PATH`: Path to Zsh config in container
+
+### Custom Config Paths
+
+If your configuration files are in different locations, update the volume mounts in `docker-compose.yml`:
+
+```yaml
+volumes:
+  - /your/custom/path:/mnt/nvim:rw
+  - /your/custom/.tmux.conf:/mnt/tmux.conf:rw
+```
+
+### Health Check
+
+The container includes a health check that verifies:
+- Application is running
+- Database connection is working
+
+View health status:
+```bash
+docker-compose ps
+```
+
+### Troubleshooting
+
+**Container won't start:**
+- Ensure Docker is running
+- Check that port 3000 is available
+- Verify config file paths exist on your system
+
+**Config files not accessible:**
+- Ensure the paths in `docker-compose.yml` match your system
+- Check file permissions
+- On macOS, ensure Docker has access to the directories in Docker Desktop settings
+
+**Database errors:**
+- The `./data` directory is created automatically
+- Database files persist between container restarts
+- To reset the database, remove files in `./data/` (except `.gitkeep`)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

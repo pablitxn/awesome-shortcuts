@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      # Config files (read/write)
+      - ${HOME}/.config/nvim:/mnt/nvim:rw
+      - ${HOME}/.tmux.conf:/mnt/tmux.conf:rw
+      - ${HOME}/.zshrc:/mnt/zshrc:rw
+      # SQLite persistence
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/app/data/local.db
+      - CONFIG_NVIM_PATH=/mnt/nvim
+      - CONFIG_TMUX_PATH=/mnt/tmux.conf
+      - CONFIG_ZSH_PATH=/mnt/zshrc
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
