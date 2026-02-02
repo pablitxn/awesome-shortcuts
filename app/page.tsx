@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Command } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { ShortcutsTable } from "@/components/shortcuts-table";
 import { AIChatWidget, Message } from "@/components/ai-chat-widget";
@@ -144,16 +144,23 @@ const MOCK_SHORTCUTS: Shortcut[] = [
   },
 ];
 
+// Category info for header
+const CATEGORY_INFO: Record<string, { label: string; color: string }> = {
+  nvim: { label: "Neovim", color: "from-emerald-500 to-green-500" },
+  tmux: { label: "Tmux", color: "from-cyan-500 to-teal-500" },
+  vscode: { label: "VS Code", color: "from-blue-500 to-indigo-500" },
+};
+
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("nvim");
   const [searchQuery, setSearchQuery] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // TODO: Replace with actual data from API/database
   const shortcuts = MOCK_SHORTCUTS;
+  const categoryInfo = CATEGORY_INFO[activeCategory] || CATEGORY_INFO.all;
 
   const handleSendMessage = (content: string) => {
     const userMessage: Message = {
@@ -164,7 +171,6 @@ export default function Home() {
     };
     setChatMessages((prev) => [...prev, userMessage]);
 
-    // Simulate bot response (will be replaced with real AI integration)
     setIsTyping(true);
     setTimeout(() => {
       const botMessage: Message = {
@@ -180,7 +186,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         activeCategory={activeCategory}
@@ -190,28 +196,6 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <header className="flex h-16 items-center justify-between border-b border-gray-200 px-8 dark:border-gray-800">
-          <h1 className="text-h3 text-foreground">
-            {activeCategory === "all"
-              ? "All Shortcuts"
-              : activeCategory.charAt(0).toUpperCase() +
-                activeCategory.slice(1)}
-          </h1>
-
-          {/* Search */}
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search shortcuts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-md border border-gray-200 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700"
-            />
-          </div>
-        </header>
-
         {/* Content Area */}
         <div className="flex-1 overflow-auto p-8">
           <ShortcutsTable
@@ -236,7 +220,6 @@ export default function Home() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onSave={(configPaths, llmConfig) => {
-          // TODO: Save to database via API
           console.log("Saving settings:", { configPaths, llmConfig });
         }}
       />

@@ -1,28 +1,42 @@
 @import "tailwindcss";
 
-/* Design tokens from CLAUDE.md */
+/* ============================================
+   DESIGN SYSTEM - AWESOME SHORTCUTS
+   Premium UI with glassmorphism & gradients
+   ============================================ */
+
 :root {
   /* Colors - Light Mode */
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafbff;
+  --foreground: #0f172a;
 
-  /* Primary - Indigo */
+  /* Primary - Vibrant Indigo/Purple */
   --primary: #6366f1;
   --primary-hover: #4f46e5;
-  --primary-light: #e0e7ff;
+  --primary-light: rgba(99, 102, 241, 0.1);
+
+  /* Accent Gradient */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+
+  /* Category Colors */
+  --color-nvim: #22c55e;
+  --color-tmux: #06b6d4;
+  --color-vscode: #3b82f6;
+  --color-all: #8b5cf6;
 
   /* Gray Neutrals */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
-  --gray-950: #030712;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --gray-950: #020617;
 
   /* Semantic Colors */
   --success: #22c55e;
@@ -30,71 +44,77 @@
   --error: #ef4444;
   --info: #3b82f6;
 
-  /* Sidebar */
-  --sidebar-bg: #f9fafb;
-  --sidebar-border: #e5e7eb;
+  /* Sidebar - Glass Effect */
+  --sidebar-bg: rgba(248, 250, 252, 0.8);
+  --sidebar-border: rgba(226, 232, 240, 0.8);
 
-  /* Card */
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
+  /* Card - Glass Effect */
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(226, 232, 240, 0.6);
 
   /* Border radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
   --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* Shadows with color */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(99, 102, 241, 0.08);
+  --shadow-lg: 0 8px 30px rgba(99, 102, 241, 0.12);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.2);
 }
 
 .dark {
-  /* Colors - Dark Mode */
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  /* Colors - Dark Mode - Clean & Minimal */
+  --background: #111113;
+  --foreground: #e4e4e7;
 
-  /* Primary - Indigo (adjusted for dark) */
-  --primary: #818cf8;
-  --primary-hover: #a5b4fc;
-  --primary-light: #312e81;
+  /* Primary - Softer for dark */
+  --primary: #a5b4fc;
+  --primary-hover: #c7d2fe;
+  --primary-light: rgba(165, 180, 252, 0.08);
 
-  /* Gray Neutrals (inverted) */
-  --gray-50: #030712;
-  --gray-100: #111827;
-  --gray-200: #1f2937;
-  --gray-300: #374151;
-  --gray-400: #4b5563;
-  --gray-500: #6b7280;
-  --gray-600: #9ca3af;
-  --gray-700: #d1d5db;
-  --gray-800: #e5e7eb;
-  --gray-900: #f3f4f6;
-  --gray-950: #f9fafb;
+  /* Accent Gradient - More subtle */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
 
-  /* Semantic Colors (adjusted for dark) */
+  /* Gray Neutrals - Warmer, less blue */
+  --gray-50: #09090b;
+  --gray-100: #18181b;
+  --gray-200: #27272a;
+  --gray-300: #3f3f46;
+  --gray-400: #52525b;
+  --gray-500: #71717a;
+  --gray-600: #a1a1aa;
+  --gray-700: #d4d4d8;
+  --gray-800: #e4e4e7;
+  --gray-900: #f4f4f5;
+  --gray-950: #fafafa;
+
+  /* Semantic Colors */
   --success: #4ade80;
   --warning: #fbbf24;
   --error: #f87171;
   --info: #60a5fa;
 
-  /* Sidebar */
-  --sidebar-bg: #111827;
-  --sidebar-border: #1f2937;
+  /* Sidebar - Solid, clean */
+  --sidebar-bg: #18181b;
+  --sidebar-border: #27272a;
 
-  /* Card */
-  --card-bg: #111827;
-  --card-border: #1f2937;
+  /* Card - Solid background */
+  --card-bg: #18181b;
+  --card-border: #27272a;
 
-  /* Shadows (darker) */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  /* Shadows - Minimal */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
 }
 
 /* Tailwind v4 theme configuration */
 @theme inline {
-  /* Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
@@ -125,15 +145,18 @@
 
   /* Fonts */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Border radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
   --radius-lg: 1rem;
 }
 
-/* Base styles */
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -142,20 +165,175 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Focus visible styles for accessibility */
+/* Subtle background pattern - Light mode only */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(168, 85, 247, 0.05), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Dark mode - no gradient overlay, clean solid background */
+.dark body::before {
+  display: none;
+}
+
+/* Focus visible styles */
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* Smooth transitions for theme changes */
+/* Smooth transitions */
 * {
-  transition-property: background-color, border-color, color;
-  transition-duration: 150ms;
-  transition-timing-function: ease-in-out;
+  transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Typography scale */
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+/* ============================================
+   GLASSMORPHISM UTILITIES
+   ============================================ */
+
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+}
+
+.dark .glass-strong {
+  background: rgba(15, 23, 42, 0.85);
+}
+
+/* ============================================
+   GRADIENT UTILITIES
+   ============================================ */
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--gradient-primary);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
 .text-h1 {
   font-size: 2.25rem;
   line-height: 2.5rem;
@@ -195,4 +373,34 @@ body {
 .text-tiny {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-500);
 }
