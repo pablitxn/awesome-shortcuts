@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Search, Keyboard, Sparkles } from "lucide-react";
+import { Search, Keyboard, Sparkles, Loader2 } from "lucide-react";
 import { KeyCap } from "./key-cap";
 import type { Shortcut } from "@/lib/types";
 
@@ -9,6 +9,7 @@ interface ShortcutsTableProps {
   shortcuts: Shortcut[];
   selectedCategory: string;
   searchQuery: string;
+  isLoading?: boolean;
 }
 
 // Category color mapping
@@ -22,6 +23,11 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
     bg: "bg-cyan-500/10 dark:bg-cyan-500/20",
     text: "text-cyan-600 dark:text-cyan-400",
     border: "border-cyan-500/30"
+  },
+  zsh: {
+    bg: "bg-orange-500/10 dark:bg-orange-500/20",
+    text: "text-orange-600 dark:text-orange-400",
+    border: "border-orange-500/30"
   },
   vscode: {
     bg: "bg-blue-500/10 dark:bg-blue-500/20",
@@ -39,6 +45,7 @@ export function ShortcutsTable({
   shortcuts,
   selectedCategory,
   searchQuery,
+  isLoading = false,
 }: ShortcutsTableProps) {
   const filteredShortcuts = useMemo(() => {
     return shortcuts.filter((shortcut) => {
@@ -56,6 +63,18 @@ export function ShortcutsTable({
       return matchesCategory && matchesSearch;
     });
   }, [shortcuts, selectedCategory, searchQuery]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center text-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <p className="text-small text-gray-500 dark:text-gray-400">
+          Loading shortcuts...
+        </p>
+      </div>
+    );
+  }
 
   // Empty state when no shortcuts exist at all
   if (shortcuts.length === 0) {

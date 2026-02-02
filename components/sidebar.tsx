@@ -12,6 +12,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
+    id: "all",
+    label: "All Shortcuts",
+    icon: <Layers className="h-4 w-4" />,
+    color: "from-purple-500 to-pink-500"
+  },
+  {
     id: "nvim",
     label: "Neovim",
     icon: <Code className="h-4 w-4" />,
@@ -22,6 +28,12 @@ const navItems: NavItem[] = [
     label: "Tmux",
     icon: <Terminal className="h-4 w-4" />,
     color: "from-cyan-500 to-teal-500"
+  },
+  {
+    id: "zsh",
+    label: "Zsh",
+    icon: <Terminal className="h-4 w-4" />,
+    color: "from-orange-500 to-amber-500"
   },
   {
     id: "vscode",

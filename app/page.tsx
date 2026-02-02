@@ -1,166 +1,58 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Command } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { ShortcutsTable } from "@/components/shortcuts-table";
 import { AIChatWidget, Message } from "@/components/ai-chat-widget";
 import { SettingsModal } from "@/components/settings-modal";
 import type { Shortcut } from "@/lib/types";
 
-// Mock data for development/testing
-const MOCK_SHORTCUTS: Shortcut[] = [
-  {
-    id: 1,
-    app_id: "nvim",
-    title: "Find Files",
-    keys: ["Leader", "f", "f"],
-    description: "Open Telescope file finder",
-    source_file: "~/.config/nvim/init.lua",
-    source_line: 42,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    app_id: "nvim",
-    title: "Save File",
-    keys: ["Leader", "w"],
-    description: "Save the current buffer",
-    source_file: "~/.config/nvim/init.lua",
-    source_line: 45,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    app_id: "nvim",
-    title: "Close Buffer",
-    keys: ["Leader", "b", "d"],
-    description: "Close the current buffer",
-    source_file: "~/.config/nvim/init.lua",
-    source_line: 48,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 4,
-    app_id: "nvim",
-    title: "Split Vertical",
-    keys: ["Leader", "v"],
-    description: "Split window vertically",
-    source_file: "~/.config/nvim/init.lua",
-    source_line: 51,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 5,
-    app_id: "tmux",
-    title: "Split Pane Horizontal",
-    keys: ["Ctrl", "b", "%"],
-    description: "Split the current pane horizontally",
-    source_file: "~/.tmux.conf",
-    source_line: 12,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 6,
-    app_id: "tmux",
-    title: "Split Pane Vertical",
-    keys: ["Ctrl", "b", '"'],
-    description: "Split the current pane vertically",
-    source_file: "~/.tmux.conf",
-    source_line: 13,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 7,
-    app_id: "tmux",
-    title: "Navigate Left",
-    keys: ["Ctrl", "b", "h"],
-    description: "Move to the pane on the left",
-    source_file: "~/.tmux.conf",
-    source_line: 20,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 8,
-    app_id: "tmux",
-    title: "New Window",
-    keys: ["Ctrl", "b", "c"],
-    description: "Create a new tmux window",
-    source_file: "~/.tmux.conf",
-    source_line: 25,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 9,
-    app_id: "vscode",
-    title: "Command Palette",
-    keys: ["Cmd", "Shift", "P"],
-    description: "Open the command palette",
-    source_file: "~/Library/Application Support/Code/User/keybindings.json",
-    source_line: 5,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 10,
-    app_id: "vscode",
-    title: "Quick Open",
-    keys: ["Cmd", "P"],
-    description: "Quickly open files by name",
-    source_file: "~/Library/Application Support/Code/User/keybindings.json",
-    source_line: 10,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 11,
-    app_id: "vscode",
-    title: "Toggle Sidebar",
-    keys: ["Cmd", "B"],
-    description: "Show or hide the sidebar",
-    source_file: "~/Library/Application Support/Code/User/keybindings.json",
-    source_line: 15,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 12,
-    app_id: "vscode",
-    title: "Go to Definition",
-    keys: ["F12"],
-    description: "Navigate to the definition of a symbol",
-    source_file: "~/Library/Application Support/Code/User/keybindings.json",
-    source_line: 20,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
 // Category info for header
 const CATEGORY_INFO: Record<string, { label: string; color: string }> = {
+  all: { label: "All Shortcuts", color: "from-purple-500 to-pink-500" },
   nvim: { label: "Neovim", color: "from-emerald-500 to-green-500" },
   tmux: { label: "Tmux", color: "from-cyan-500 to-teal-500" },
+  zsh: { label: "Zsh", color: "from-orange-500 to-amber-500" },
   vscode: { label: "VS Code", color: "from-blue-500 to-indigo-500" },
 };
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState("nvim");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const shortcuts = MOCK_SHORTCUTS;
-  const categoryInfo = CATEGORY_INFO[activeCategory] || CATEGORY_INFO.all;
+  // Fetch shortcuts from API
+  const fetchShortcuts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/shortcuts');
+      const data = await res.json();
+      if (data.success && data.data?.shortcuts) {
+        setShortcuts(data.data.shortcuts);
+      }
+    } catch (error) {
+      console.error('Failed to fetch shortcuts:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load shortcuts on mount
+  useEffect(() => {
+    fetchShortcuts();
+  }, [fetchShortcuts]);
+
+  // Refresh handler for settings modal
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    await fetchShortcuts();
+  };
+
+  const categoryInfo = CATEGORY_INFO[activeCategory] || CATEGORY_INFO.nvim;
 
   const handleSendMessage = (content: string) => {
     const userMessage: Message = {
@@ -202,6 +94,7 @@ export default function Home() {
             shortcuts={shortcuts}
             selectedCategory={activeCategory}
             searchQuery={searchQuery}
+            isLoading={isLoading}
           />
         </div>
       </main>
@@ -220,8 +113,11 @@ export default function Home() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onSave={(configPaths, llmConfig) => {
-          console.log("Saving settings:", { configPaths, llmConfig });
+          console.log("Settings saved:", { configPaths, llmConfig });
+          // Refresh shortcuts after saving config paths
+          handleRefresh();
         }}
+        onRefresh={handleRefresh}
       />
     </div>
   );

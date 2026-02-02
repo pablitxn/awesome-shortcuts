@@ -13,10 +13,13 @@ import {
   FileCode,
   Sparkles,
   Monitor,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
-import type { LLMProvider } from "@/lib/types";
+import type { LLMProvider, ConfigPath } from "@/lib/types";
 
 interface ConfigPathInput {
+  id?: number; // DB id if exists
   appId: string;
   label: string;
   path: string;
@@ -35,44 +38,45 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (configPaths: ConfigPathInput[], llmConfig: LLMConfigInput) => void;
+  onRefresh?: () => Promise<void>;
   initialConfigPaths?: ConfigPathInput[];
   initialLLMConfig?: LLMConfigInput;
 }
 
-const defaultConfigPaths: ConfigPathInput[] = [
-  {
-    appId: "nvim",
+// App configurations with icons and placeholders
+const APP_CONFIGS: Record<string, { label: string; icon: React.ReactNode; placeholder: string }> = {
+  nvim: {
     label: "Neovim",
-    path: "",
-    enabled: true,
     icon: <Code className="h-4 w-4" />,
     placeholder: "~/.config/nvim/init.lua",
   },
-  {
-    appId: "tmux",
+  tmux: {
     label: "Tmux",
-    path: "",
-    enabled: true,
     icon: <Terminal className="h-4 w-4" />,
     placeholder: "~/.tmux.conf",
   },
-  {
-    appId: "zsh",
+  zsh: {
     label: "Zsh",
-    path: "",
-    enabled: true,
     icon: <Terminal className="h-4 w-4" />,
     placeholder: "~/.zshrc",
   },
-  {
-    appId: "vscode",
+  vscode: {
     label: "VS Code",
-    path: "",
-    enabled: true,
     icon: <FileCode className="h-4 w-4" />,
     placeholder: "~/.config/Code/User/keybindings.json",
   },
-];
+};
+
+const defaultConfigPaths: ConfigPathInput[] = Object.entries(APP_CONFIGS).map(
+  ([appId, config]) => ({
+    appId,
+    label: config.label,
+    path: "",
+    enabled: false,
+    icon: config.icon,
+    placeholder: config.placeholder,
+  })
+);
 
 const defaultLLMConfig: LLMConfigInput = {
   provider: "openai",
@@ -96,6 +100,7 @@ export function SettingsModal({
   isOpen,
   onClose,
   onSave,
+  onRefresh,
   initialConfigPaths,
   initialLLMConfig,
 }: SettingsModalProps) {
@@ -109,20 +114,54 @@ export function SettingsModal({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Reset form when modal opens with new initial values
+  // Fetch existing config paths from API when modal opens
   useEffect(() => {
     if (isOpen) {
-      setConfigPaths(initialConfigPaths || defaultConfigPaths);
-      setLLMConfig(initialLLMConfig || defaultLLMConfig);
+      setIsLoading(true);
       setErrors({});
+
+      fetch('/api/config-paths')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data?.paths) {
+            // Merge API data with default configs
+            const apiPaths: ConfigPath[] = data.data.paths;
+            const merged = defaultConfigPaths.map(defaultPath => {
+              const existing = apiPaths.find(p => p.app_id === defaultPath.appId);
+              if (existing) {
+                return {
+                  ...defaultPath,
+                  id: existing.id,
+                  path: existing.path,
+                  enabled: Boolean(existing.enabled),
+                };
+              }
+              return { ...defaultPath, enabled: false };
+            });
+            setConfigPaths(merged);
+          } else {
+            setConfigPaths(defaultConfigPaths);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch config paths:', err);
+          setConfigPaths(defaultConfigPaths);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+
+      setLLMConfig(initialLLMConfig || defaultLLMConfig);
     }
-  }, [isOpen, initialConfigPaths, initialLLMConfig]);
+  }, [isOpen, initialLLMConfig]);
 
   // Handle ESC key to close modal
   const handleKeyDown = useCallback(
@@ -224,13 +263,79 @@ export function SettingsModal({
     if (!validateForm()) return;
 
     setIsSaving(true);
+    const saveErrors: Array<{ appId: string; error: string }> = [];
+
     try {
-      await onSave(configPaths, llmConfig);
-      onClose();
+      // Process each config path
+      for (const config of configPaths) {
+        // Skip if no path provided and not in DB
+        if (!config.path.trim() && !config.id) {
+          continue;
+        }
+
+        // If exists in DB, update it
+        if (config.id) {
+          const res = await fetch(`/api/config-paths/${config.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              path: config.path,
+              enabled: config.enabled,
+            }),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            saveErrors.push({ appId: config.appId, error: data.error || 'Failed to update' });
+          }
+        }
+        // If has path but not in DB, create it
+        else if (config.path.trim()) {
+          const res = await fetch('/api/config-paths', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              app_id: config.appId,
+              path: config.path,
+              enabled: config.enabled,
+            }),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            saveErrors.push({ appId: config.appId, error: data.error || 'Failed to create' });
+          }
+        }
+      }
+
+      if (saveErrors.length > 0) {
+        const errorMessages = saveErrors.map(e => `${e.appId}: ${e.error}`).join('; ');
+        setErrors({ general: errorMessages });
+      } else {
+        await onSave(configPaths, llmConfig);
+        onClose();
+      }
     } catch {
       setErrors({ general: "Failed to save settings. Please try again." });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch('/api/shortcuts/refresh', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        if (onRefresh) {
+          await onRefresh();
+        }
+      } else {
+        setErrors({ general: data.error || 'Failed to refresh shortcuts' });
+      }
+    } catch {
+      setErrors({ general: "Failed to refresh shortcuts. Please try again." });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -272,6 +377,13 @@ export function SettingsModal({
 
         {/* Body */}
         <div className="flex-1 space-y-8 overflow-y-auto p-6">
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          )}
+
           {/* General Error */}
           {errors.general && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
@@ -490,21 +602,31 @@ export function SettingsModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
           <button
-            onClick={onClose}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isSaving}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Cancel
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? "Refreshing..." : "Refresh Shortcuts"}
           </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Settings"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving || isLoading}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isSaving ? "Saving..." : "Save Settings"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

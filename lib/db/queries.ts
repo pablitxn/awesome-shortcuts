@@ -34,7 +34,7 @@ export const configPaths = {
 
   update: (id: number, data: Partial<Pick<ConfigPath, 'path' | 'enabled'>>): ConfigPath | undefined => {
     const fields: string[] = [];
-    const values: (string | boolean | number)[] = [];
+    const values: (string | number)[] = [];
 
     if (data.path !== undefined) {
       fields.push('path = ?');
@@ -42,7 +42,8 @@ export const configPaths = {
     }
     if (data.enabled !== undefined) {
       fields.push('enabled = ?');
-      values.push(data.enabled);
+      // SQLite uses 0/1 for booleans
+      values.push(data.enabled ? 1 : 0);
     }
 
     if (fields.length === 0) return configPaths.getById(id);
